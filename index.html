@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Turístico - Santo Antônio do Pinhal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS & JS for the Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        #map { height: 100%; width: 100%; z-index: 1; }
+        
+        /* Custom map marker styles */
+        .custom-marker {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 2px solid white;
+        }
+        .marker-hotel { background-color: #8b5cf6; } /* Violet */
+        .marker-food { background-color: #f97316; } /* Orange */
+        .marker-nature { background-color: #22c55e; } /* Green */
+        .marker-city { background-color: #3b82f6; } /* Blue */
+
+        /* Popup styling overrides */
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            padding: 0;
+            overflow: hidden;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            width: 220px !important;
+        }
+        
+        /* Custom scrollbar for sidebar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-96 bg-white shadow-xl flex flex-col h-[40vh] md:h-screen z-10 relative">
+        <div class="p-6 bg-emerald-700 text-white shadow-md">
+            <h1 class="text-2xl font-bold mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i>Roteiro Pinhal</h1>
+            <p class="text-emerald-100 text-sm">Viagem em Família (14 a 17 de Maio)</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            
+            <!-- Dia 1 -->
+            <section>
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Quinta-Feira (14/05)</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('pousada')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-bed"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Pousada Recanto das Orquídeas</p>
+                            <p class="text-xs text-gray-500">Check-in e descanso</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('lafamilia')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-utensils"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Restaurante La Familia</p>
+                            <p class="text-xs text-gray-500">Jantar (Caldos no pão italiano)</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Dia 2 -->
+            <section>
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Sexta-Feira (15/05)</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('jardim')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-leaf"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Jardim dos Pinhais</p>
+                            <p class="text-xs text-gray-500">Manhã: Ecco Parque</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('arcoiris')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-fish"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Restaurante Arco-Íris</p>
+                            <p class="text-xs text-gray-500">Almoço (Trutas)</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('estacao')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-train"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Estação & Mirante NS Auxiliadora</p>
+                            <p class="text-xs text-gray-500">Tarde: Bolinho de bacalhau e vista</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('pico')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-mountain-sun"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Pico do Agudo</p>
+                            <p class="text-xs text-gray-500">Pôr do Sol (Ir de carro)</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Dia 3 -->
+            <section>
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Sábado (16/05)</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('cachoeira')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-water"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Cachoeira do Lageado</p>
+                            <p class="text-xs text-gray-500">Manhã: Natureza e águas</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('centro')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-map-pin"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Tour pelo Centro</p>
+                            <p class="text-xs text-gray-500">Fonte, Mirante do Cruzeiro e Boulevard</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('cafe')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-mug-hot"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Café com Orquídea & Eisland</p>
+                            <p class="text-xs text-gray-500">Fim de tarde: Lanche e Gelato</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Dia 4 -->
+            <section>
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Domingo (17/05)</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('igrejas')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-church"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Missa e Fotos</p>
+                            <p class="text-xs text-gray-500">Igreja Matriz e Igreja São Benedito</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition" onclick="zoomTo('compras')">
+                        <div class="mt-1 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-bag-shopping"></i></div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Compras de Despedida</p>
+                            <p class="text-xs text-gray-500">Praça do Artesão e Bodega</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
+        
+        <div class="p-4 bg-gray-50 border-t border-gray-200 text-center text-xs text-gray-500">
+            Clique nos itens para localizar no mapa.
+        </div>
+    </aside>
+
+    <!-- Map Container -->
+    <main class="flex-1 h-[60vh] md:h-screen relative">
+        <div id="map"></div>
+    </main>
+
+    <script>
+        // Data for all locations (Approximate coordinates based on real Santo Antonio do Pinhal layout)
+        const locations = {
+            'pousada': { lat: -22.822, lng: -45.658, title: 'Pousada Recanto das Orquídeas', type: 'hotel', icon: 'fa-bed', desc: 'Nossa base. Conforto e natureza.' },
+            'lafamilia': { lat: -22.8255, lng: -45.6625, title: 'Restaurante La Familia', type: 'food', icon: 'fa-utensils', desc: 'Jantar aconchegante com caldos no pão italiano.' },
+            'jardim': { lat: -22.8362, lng: -45.6543, title: 'Jardim dos Pinhais Ecco Parque', type: 'nature', icon: 'fa-leaf', desc: 'Caminhada plana e jardins temáticos perfeitos para os pais.' },
+            'arcoiris': { lat: -22.8400, lng: -45.6500, title: 'Restaurante Arco-Íris', type: 'food', icon: 'fa-fish', desc: 'Trutas frescas e caldos com ótimo custo-benefício.' },
+            'estacao': { lat: -22.8214, lng: -45.6268, title: 'Estação Eugênio Lefèvre & Mirante', type: 'city', icon: 'fa-train', desc: 'Mirante N.S. Auxiliadora e o famoso bolinho de bacalhau.' },
+            'pico': { lat: -22.8596, lng: -45.6450, title: 'Pico do Agudo', type: 'nature', icon: 'fa-mountain-sun', desc: 'Vista 360º incrível. O carro vai até o topo!' },
+            'cachoeira': { lat: -22.7845, lng: -45.6178, title: 'Cachoeira do Lageado', type: 'nature', icon: 'fa-water', desc: 'Acesso super fácil e poços rasos na natureza.' },
+            'centro': { lat: -22.8260, lng: -45.6630, title: 'Fonte, Boulevard e Cruzeiro', type: 'city', icon: 'fa-map-pin', desc: 'Caminhada pelo Boulevard Araucária, Fonte Santo Antônio e Mirante do Cruzeiro.' },
+            'cafe': { lat: -22.8270, lng: -45.6650, title: 'Café com Orquídea & Eisland', type: 'food', icon: 'fa-ice-cream', desc: 'Pausa para um café e gelato artesanal.' },
+            'igrejas': { lat: -22.8253, lng: -45.6628, title: 'Igreja Matriz & São Benedito', type: 'city', icon: 'fa-church', desc: 'Missa de domingo e as clássicas fotos nas escadarias.' },
+            'compras': { lat: -22.8248, lng: -45.6610, title: 'Praça do Artesão & A Bodega', type: 'city', icon: 'fa-bag-shopping', desc: 'Artesanato local, pinhão, queijos e doces para levar.' }
+        };
+
+        // Initialize Map
+        const map = L.map('map', { zoomControl: false }).setView([-22.827, -45.663], 13);
+        
+        // Add zoom control to top right
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // Add Tile Layer (OpenStreetMap is free and detailed)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Object to store marker references
+        const markers = {};
+
+        // Create bounds object to fit all markers on load
+        const bounds = L.latLngBounds();
+
+        // Add markers to the map
+        Object.keys(locations).forEach(key => {
+            const loc = locations[key];
+            bounds.extend([loc.lat, loc.lng]);
+
+            // Determine class based on type
+            let colorClass = '';
+            if (loc.type === 'hotel') colorClass = 'marker-hotel';
+            if (loc.type === 'food') colorClass = 'marker-food';
+            if (loc.type === 'nature') colorClass = 'marker-nature';
+            if (loc.type === 'city') colorClass = 'marker-city';
+
+            // Custom HTML Icon
+            const customIcon = L.divIcon({
+                className: '',
+                html: `<div class="custom-marker ${colorClass}"><i class="fa-solid ${loc.icon}"></i></div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
+                popupAnchor: [0, -18]
+            });
+
+            // Popup HTML
+            const popupContent = `
+                <div class="bg-white">
+                    <div class="${colorClass.replace('marker-', 'bg-').replace('hotel', 'violet-600').replace('food', 'orange-500').replace('nature', 'green-500').replace('city', 'blue-500')} p-3 text-white">
+                        <h3 class="font-bold text-sm m-0 leading-tight"><i class="fa-solid ${loc.icon} mr-1"></i> ${loc.title}</h3>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm text-gray-600 m-0">${loc.desc}</p>
+                    </div>
+                </div>
+            `;
+
+            // Create and store marker
+            const marker = L.marker([loc.lat, loc.lng], { icon: customIcon })
+                .bindPopup(popupContent)
+                .addTo(map);
+            
+            markers[key] = marker;
+        });
+
+        // Auto-adjust map view to show all markers
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+        // Function to zoom to specific location when clicked on sidebar
+        function zoomTo(key) {
+            const loc = locations[key];
+            if (loc) {
+                // Fly to location
+                map.flyTo([loc.lat, loc.lng], 16, {
+                    duration: 1.5
+                });
+                
+                // Open popup after flying
+                setTimeout(() => {
+                    markers[key].openPopup();
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
